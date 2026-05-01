@@ -6,53 +6,93 @@ imagen:
     .word 0,1,1,0,0
     .word 0,1,0,0,0
 
+espacio: .asciiz " "
+salto:   .asciiz "\n"
+
 .text
 .globl main
 
 main:
-    la t0, imagen      # t0 = base de la matriz
+    la t0, imagen      # base de la matriz
     li t1, 0           # i = 0
 
+# -------- ESPEJO --------
 for_filas:
     li t2, 5
-    bge t1, t2, fin    # if i >= 5 -> salir
+    bge t1, t2, imprimir
 
-    li t3, 0           # izq = 0
-    li t4, 4           # der = 4
+    li t3, 0           # izq
+    li t4, 4           # der
 
 while_loop:
-    bge t3, t4, siguiente_fila   # while (izq < der)
+    bge t3, t4, siguiente_fila
 
-    # -------- calcular direccion izq --------
     li t5, 5
-    mul t6, t1, t5     # i * 5
-    add t6, t6, t3     # i*5 + izq
-    slli t6, t6, 2     # *4 (bytes)
-    add t6, t0, t6     # direccion izq
+    mul t6, t1, t5
+    add t6, t6, t3
+    slli t6, t6, 2
+    add t6, t0, t6
 
-    # -------- calcular direccion der --------
-    mul t7, t1, t5     # i * 5
-    add t7, t7, t4     # i*5 + der
-    slli t7, t7, 2
-    add t7, t0, t7     # direccion der
+    mul a0, t1, t5
+    add a0, a0, t4
+    slli a0, a0, 2
+    add a0, t0, a0
 
-    # -------- swap --------
-    lw t8, 0(t6)       # temp = img[i][izq]
-    lw t9, 0(t7)       # valor der
+    lw a1, 0(t6)
+    lw a2, 0(a0)
 
-    sw t9, 0(t6)       # img[i][izq] = der
-    sw t8, 0(t7)       # img[i][der] = temp
+    sw a2, 0(t6)
+    sw a1, 0(a0)
 
-    # -------- mover punteros --------
-    addi t3, t3, 1     # izq++
-    addi t4, t4, -1    # der--
+    addi t3, t3, 1
+    addi t4, t4, -1
 
     j while_loop
 
 siguiente_fila:
-    addi t1, t1, 1     # i++
+    addi t1, t1, 1
     j for_filas
 
+# -------- IMPRESION --------
+imprimir:
+    li t1, 0           # i = 0
+
+print_filas:
+    li t2, 5
+    bge t1, t2, fin
+
+    li t3, 0           # j = 0
+
+print_cols:
+    li t4, 5
+    bge t3, t4, salto_linea
+
+    li t5, 5
+    mul t6, t1, t5
+    add t6, t6, t3
+    slli t6, t6, 2
+    add t6, t0, t6
+
+    lw a0, 0(t6)       # cargar valor
+
+    li a7, 1           # print int
+    ecall
+
+    la a0, espacio     # imprimir espacio
+    li a7, 4
+    ecall
+
+    addi t3, t3, 1
+    j print_cols
+
+salto_linea:
+    la a0, salto
+    li a7, 4
+    ecall
+
+    addi t1, t1, 1
+    j print_filas
+
 fin:
-    li a7, 10          # exit
+    li a7, 10
     ecall
