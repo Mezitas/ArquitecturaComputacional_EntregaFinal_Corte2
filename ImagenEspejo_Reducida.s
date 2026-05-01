@@ -1,5 +1,6 @@
 .data
 
+.data
 imagen:
     .word 0,1,0,0,0
     .word 0,1,1,0,0
@@ -13,15 +14,15 @@ imagen:
 main:
     la   t0, imagen
     li   t1, 0
+    li   s0, 5
+
 fila_loop:
-    li   t2, 5
-    bge  t1, t2, fin
+    bge  t1, s0, fin
 
     li   t3, 0
     li   t4, 4
 
-    li   t5, 5
-    mul  t6, t1, t5
+    mul  t6, t1, s0
     slli t6, t6, 2
     add  t6, t0, t6
 
@@ -34,7 +35,6 @@ while_loop:
     slli t5, t4, 2
     add  a1, t6, t5
 
-    # Intercambio
     lw   t5, 0(a0)
     lw   t2, 0(a1)
     sw   t2, 0(a0)
